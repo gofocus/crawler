@@ -27,5 +27,7 @@ target/
 .idea/
 
 *.db
+
 crawler.trace.db
 crawler.h2.db
+
