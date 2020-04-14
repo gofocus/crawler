@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @Author: GoFocus
@@ -25,28 +26,24 @@ public class Main {
 
     public static void main(String[] args) throws IOException, SQLException {
         connection = DriverManager.getConnection("jdbc:h2:file:D:\\Git\\crawler\\crawler;MV_STORE=false", "root", "root");
-
-        while (true) {
-            String link2Process = getLinkUnprocessed();
+        String link;
+        while ((link = getLinkUnprocessed()) != null) {
             ArrayList<String> allLinks = getAllLinks();
+            Document document = getHtmlAndParse(link);
 
-            Document document = getHtmlAndParse(link2Process);
-
-            ArrayList<String> newLinkPool = new ArrayList<>();
+            HashSet<String> newLinkPool = new HashSet<>();
             document.select("a").stream().map(tag -> tag.attr("href")).filter(Main::isInterestingLink).filter(newLink -> !allLinks.contains(newLink)).forEach(newLinkPool::add);
 
             storeNewLinks(newLinkPool);
-
             storeIntoDataBaseIfItIsNewsPage(document);
-
-            setLinkProcessed(link2Process);
+            setLinkProcessed(link);
         }
 
     }
 
     private static ArrayList<String> getAllLinks() throws SQLException {
         ArrayList<String> links = new ArrayList<>();
-        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINK_POOL");
+        PreparedStatement statement = connection.prepareStatement("SELECT distinct LINK FROM LINK_POOL");
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             links.add(resultSet.getString(1));
@@ -60,7 +57,7 @@ public class Main {
         statement.execute();
     }
 
-    private static void storeNewLinks(ArrayList<String> newLinkPool) throws SQLException {
+    private static void storeNewLinks(HashSet<String> newLinkPool) throws SQLException {
         String sql = "INSERT INTO LINK_POOL (LINK) values ?";
         for (String newLink : newLinkPool) {
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -70,7 +67,7 @@ public class Main {
     }
 
     private static String getLinkUnprocessed() throws SQLException {
-        String sql = "SELECT LINK FROM LINK_POOL WHERE PROCESSED = false";
+        String sql = "SELECT LINK FROM LINK_POOL WHERE PROCESSED = false LIMIT 1";
         PreparedStatement statement = connection.prepareStatement(sql);
 
         ResultSet resultSet = statement.executeQuery();
