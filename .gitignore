@@ -25,3 +25,7 @@ hs_err_pid*
 *.iml
 target/
 .idea/
+
+crawler.trace.db
+crawler.h2.db
+crawler.lock.db
