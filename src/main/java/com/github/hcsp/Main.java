@@ -14,7 +14,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 /**
  * @Author: GoFocus
@@ -22,11 +21,11 @@ import java.util.LinkedList;
  * @Description:
  */
 public class Main {
+    private static String homePage = "https://sina.cn";
 
     public static void main(String[] args) throws IOException {
         ArrayList<String> linkPool = new ArrayList<>();
         HashSet<String> processedLink = new HashSet<>();
-        String homePage = "https://sina.cn";
         linkPool.add(homePage);
 
         while (true) {
@@ -41,34 +40,56 @@ public class Main {
                 continue;
             }
 
-            if (link.contains("sina.cn") && !link.contains("passport") && (link.contains("news.sina.cn") || link.equals(homePage)) ) {
-                System.out.println(link);
-                CloseableHttpClient httpclient = HttpClients.createDefault();
-                HttpGet httpGet = new HttpGet(link);
-                try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
-//                    System.out.println(response1.getStatusLine());
-                    HttpEntity entity1 = response1.getEntity();
-                    String html = EntityUtils.toString(entity1);
-                    Document doc = Jsoup.parse(html);
+            if (isInterestingLink(link)) {
+                Document document = getHtmlAndParse(link);
+                document.select("a").stream().map(tag -> tag.attr("href")).forEach(linkPool::add);
+                storeIntoDataBaseIfItIsNewsPage(document);
+                processedLink.add(link);
 
-                    Elements links = doc.select("a");
-
-                    for (Element aTag : links) {
-                        linkPool.add(aTag.attr("href"));
-                    }
-
-                    Elements articles = doc.select("article");
-                    if (!articles.isEmpty()) {
-                        for (Element article : articles) {
-                                System.out.println(article.selectFirst("h1").text());
-                        }
-                    }
-                    processedLink.add(link);
-                }
             }
 
         }
 
+    }
+
+    private static void storeIntoDataBaseIfItIsNewsPage(Document document) {
+        Elements articles = document.select("article");
+        if (!articles.isEmpty()) {
+            for (Element article : articles) {
+                System.out.println(article.selectFirst("h1").text());
+            }
+        }
+    }
+
+    private static Document getHtmlAndParse(String link) throws IOException {
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(link);
+        try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
+            System.out.println(response1.getStatusLine());
+            HttpEntity entity1 = response1.getEntity();
+            String html = EntityUtils.toString(entity1);
+            return Jsoup.parse(html);
+        }
+    }
+
+    private static boolean isInterestingLink(String link) {
+        return isSina(link) && isNotLoginPage(link) && (isNewsPage(link) || isHomePage(link));
+    }
+
+    private static boolean isHomePage(String link) {
+        return link.equals(homePage);
+    }
+
+    private static boolean isNewsPage(String link) {
+        return link.contains("news.sina.cn");
+    }
+
+    private static boolean isNotLoginPage(String link) {
+        return !link.contains("passport");
+    }
+
+    private static boolean isSina(String link) {
+        return link.contains("sina.cn");
     }
 
 
