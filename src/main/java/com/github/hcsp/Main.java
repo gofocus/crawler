@@ -27,13 +27,13 @@ public class Main {
         connection = DriverManager.getConnection("jdbc:h2:file:D:\\Git\\crawler\\crawler;MV_STORE=false", "root", "root");
 
         while (true) {
-            ArrayList<String> linksUnprocessed = getLinkUnprocessed();
+            String link2Process = getLinkUnprocessed();
+            ArrayList<String> allLinks = getAllLinks();
 
-            String link2Process = linksUnprocessed.get(0);
             Document document = getHtmlAndParse(link2Process);
 
             ArrayList<String> newLinkPool = new ArrayList<>();
-            document.select("a").stream().map(tag -> tag.attr("href")).filter(Main::isInterestingLink).filter(newLink -> !linksUnprocessed.contains(newLink)).forEach(newLinkPool::add);
+            document.select("a").stream().map(tag -> tag.attr("href")).filter(Main::isInterestingLink).filter(newLink -> !allLinks.contains(newLink)).forEach(newLinkPool::add);
 
             storeNewLinks(newLinkPool);
 
@@ -42,6 +42,16 @@ public class Main {
             setLinkProcessed(link2Process);
         }
 
+    }
+
+    private static ArrayList<String> getAllLinks() throws SQLException {
+        ArrayList<String> links = new ArrayList<>();
+        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINK_POOL");
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            links.add(resultSet.getString(1));
+        }
+        return links;
     }
 
     private static void setLinkProcessed(String linkProcessed) throws SQLException {
@@ -59,18 +69,16 @@ public class Main {
         }
     }
 
-    private static ArrayList<String> getLinkUnprocessed() throws SQLException {
-        ArrayList<String> linkList = new ArrayList<>();
+    private static String getLinkUnprocessed() throws SQLException {
         String sql = "SELECT LINK FROM LINK_POOL WHERE PROCESSED = false";
         PreparedStatement statement = connection.prepareStatement(sql);
 
         ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            linkList.add(resultSet.getString(1));
+        if (resultSet.next()) {
+            return resultSet.getString(1);
         }
-        return linkList;
+        return "";
     }
-
 
     private static void storeIntoDataBaseIfItIsNewsPage(Document document) throws SQLException {
         Elements articles = document.select("article");
