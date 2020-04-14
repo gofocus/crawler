@@ -8,56 +8,80 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 /**
  * @Author: GoFocus
  * @Date: 2020-04-13 15:26
  * @Description:
  */
-public class Main {
-    private static String homePage = "https://sina.cn";
 
-    public static void main(String[] args) throws IOException {
-        ArrayList<String> linkPool = new ArrayList<>();
-        HashSet<String> processedLink = new HashSet<>();
-        linkPool.add(homePage);
+public class Main {
+    private static Connection connection;
+
+    public static void main(String[] args) throws IOException, SQLException {
+        connection = DriverManager.getConnection("jdbc:h2:file:D:\\Git\\crawler\\crawler;MV_STORE=false", "root", "root");
 
         while (true) {
-            if (linkPool.isEmpty()) {
-                break;
-            }
+            ArrayList<String> linksUnprocessed = getLinkUnprocessed();
 
-            int index = linkPool.size() - 1;
-            String link = linkPool.remove(index);
+            String link2Process = linksUnprocessed.get(0);
+            Document document = getHtmlAndParse(link2Process);
 
-            if (processedLink.contains(link)) {
-                continue;
-            }
+            ArrayList<String> newLinkPool = new ArrayList<>();
+            document.select("a").stream().map(tag -> tag.attr("href")).filter(Main::isInterestingLink).filter(newLink -> !linksUnprocessed.contains(newLink)).forEach(newLinkPool::add);
 
-            if (isInterestingLink(link)) {
-                Document document = getHtmlAndParse(link);
-                document.select("a").stream().map(tag -> tag.attr("href")).forEach(linkPool::add);
-                storeIntoDataBaseIfItIsNewsPage(document);
-                processedLink.add(link);
+            storeNewLinks(newLinkPool);
 
-            }
+            storeIntoDataBaseIfItIsNewsPage(document);
 
+            setLinkProcessed(link2Process);
         }
 
     }
 
-    private static void storeIntoDataBaseIfItIsNewsPage(Document document) {
+    private static void setLinkProcessed(String linkProcessed) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("UPDATE LINK_POOL SET PROCESSED = true WHERE LINK = ?");
+        statement.setString(1, linkProcessed);
+        statement.execute();
+    }
+
+    private static void storeNewLinks(ArrayList<String> newLinkPool) throws SQLException {
+        String sql = "INSERT INTO LINK_POOL (LINK) values ?";
+        for (String newLink : newLinkPool) {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, newLink);
+            statement.execute();
+        }
+    }
+
+    private static ArrayList<String> getLinkUnprocessed() throws SQLException {
+        ArrayList<String> linkList = new ArrayList<>();
+        String sql = "SELECT LINK FROM LINK_POOL WHERE PROCESSED = false";
+        PreparedStatement statement = connection.prepareStatement(sql);
+
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            linkList.add(resultSet.getString(1));
+        }
+        return linkList;
+    }
+
+
+    private static void storeIntoDataBaseIfItIsNewsPage(Document document) throws SQLException {
         Elements articles = document.select("article");
         if (!articles.isEmpty()) {
-            for (Element article : articles) {
-                System.out.println(article.selectFirst("h1").text());
-            }
+            String title = articles.get(0).selectFirst("h1").text();
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO NEWS (TITLE, CONTENT, CREATED_AT, MODIFIED_AT) VALUES (?,?,?,?)");
+            statement.setString(1, title);
+            statement.setString(2, "");
+            statement.setDate(3, new Date(System.currentTimeMillis()));
+            statement.setDate(4, new Date(System.currentTimeMillis()));
+            statement.execute();
         }
     }
 
@@ -77,6 +101,7 @@ public class Main {
     }
 
     private static boolean isHomePage(String link) {
+        String homePage = "https://sina.cn";
         return link.equals(homePage);
     }
 
