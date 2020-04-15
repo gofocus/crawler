@@ -12,7 +12,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException, SQLException {
 
-        new Crawler(new JdbcCrawlerDao()).run();
+//        new Crawler(new JdbcCrawlerDao()).run();
+        new Crawler(new MybatisCrawlerDao()).run();
+
 
     }
 }

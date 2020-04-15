@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
  */
 
 public class Crawler {
-    private JdbcCrawlerDao dao;
+    private final CrawlerDao dao;
 
-    public Crawler(JdbcCrawlerDao dao) {
+    public Crawler(CrawlerDao dao) {
         this.dao = dao;
     }
 
@@ -35,7 +35,7 @@ public class Crawler {
     public void run() throws IOException, SQLException {
         String link;
         while ((link = dao.getLinkUnprocessed()) != null) {
-            ArrayList<String> allLinks = dao.getAllLinks();
+            ArrayList<String> allLinks = (ArrayList<String>) dao.getAllLinks();
             Document document = getHtmlAndParse(link);
 
             HashSet<String> newLinkPool = new HashSet<>();
@@ -53,7 +53,9 @@ public class Crawler {
         if (!articles.isEmpty()) {
             String title = articles.get(0).selectFirst("h1").text();
             String content = articles.select(".art_p").stream().map(Element::text).collect(Collectors.joining("\n"));
-            dao.storeIntoDataBase(title, content, link);
+            News news = new News(title, content, link);
+
+            dao.storeIntoDataBase(news);
         }
     }
 
