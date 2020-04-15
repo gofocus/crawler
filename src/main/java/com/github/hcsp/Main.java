@@ -11,9 +11,11 @@ import java.sql.SQLException;
 public class Main {
 
     public static void main(String[] args) throws IOException, SQLException {
+        CrawlerDao dao = new MybatisCrawlerDao();
 
-//        new Crawler(new JdbcCrawlerDao()).run();
-        new Crawler(new MybatisCrawlerDao()).run();
+        for (int i = 0; i < 10; i++) {
+            new Crawler(dao).start();
+        }
 
 
     }
