@@ -1,8 +1,8 @@
 package com.github.hcsp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * @Author: GoFocus
@@ -11,7 +11,7 @@ import java.util.HashSet;
  */
 public interface CrawlerDao {
 
-    ArrayList<String> getAllLinks() throws SQLException;
+    List<String> getAllLinks() throws SQLException;
 
     void setLinkProcessed(String linkProcessed) throws SQLException;
 

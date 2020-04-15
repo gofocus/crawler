@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.hcsp.MyMapper">
+    <resultMap id="linkResultMap" type="com.github.hcsp.News">
+        <id property="id" column="ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="content" column="CONTENT"/>
+        <result property="url" column="LINK"/>
+    </resultMap>
+    
+    <select id="getAllLinks" resultMap="linkResultMap">
+        SELECT distinct LINK FROM LINK_POOL
+    </select>
+
+
+</mapper>
