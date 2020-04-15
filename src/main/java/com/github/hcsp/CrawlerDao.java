@@ -1,8 +1,8 @@
 package com.github.hcsp;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * @Author: GoFocus
@@ -11,13 +11,13 @@ import java.util.HashSet;
  */
 public interface CrawlerDao {
 
-    ArrayList<String> getAllLinks() throws SQLException;
+    List<String> getAllLinks() throws SQLException;
 
-    void setLinkProcessed(String linkProcessed) throws SQLException;
+    int setLinkProcessed(String linkProcessed) throws SQLException;
 
-    void storeNewLinks(HashSet<String> newLinkPool) throws SQLException;
+    int storeNewLinks(HashSet<String> newLinkPool) throws SQLException;
 
     String getLinkUnprocessed() throws SQLException;
 
-    void storeIntoDataBase(String title, String content, String link);
+    int storeIntoDataBase(News news);
 }

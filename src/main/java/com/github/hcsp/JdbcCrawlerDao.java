@@ -1,5 +1,7 @@
 package com.github.hcsp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +14,7 @@ import java.util.HashSet;
 public class JdbcCrawlerDao implements CrawlerDao {
     private Connection connection;
 
+    @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
     public JdbcCrawlerDao() {
         try {
             this.connection = DriverManager.getConnection("jdbc:h2:file:D:\\Git\\crawler\\crawler;MV_STORE=false", "root", "root");
@@ -33,22 +36,33 @@ public class JdbcCrawlerDao implements CrawlerDao {
     }
 
     @Override
-    public void setLinkProcessed(String linkProcessed) throws SQLException {
+    public int setLinkProcessed(String linkProcessed) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("UPDATE LINK_POOL SET PROCESSED = true WHERE LINK = ?")) {
             statement.setString(1, linkProcessed);
-            statement.execute();
+            boolean execute = statement.execute();
+            if (execute) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
     }
 
     @Override
-    public void storeNewLinks(HashSet<String> newLinkPool) throws SQLException {
+    public int storeNewLinks(HashSet<String> newLinkPool) throws SQLException {
         String sql = "INSERT INTO LINK_POOL (LINK) values ?";
         for (String newLink : newLinkPool) {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, newLink);
-                statement.execute();
+                boolean execute = statement.execute();
+                if (execute) {
+                    return 1;
+                } else {
+                    return 0;
+                }
             }
         }
+        return 0;
     }
 
     @Override
@@ -63,14 +77,16 @@ public class JdbcCrawlerDao implements CrawlerDao {
     }
 
     @Override
-    public void storeIntoDataBase(String title, String content, String link) {
+    public int storeIntoDataBase(News news) {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO NEWS (TITLE, CONTENT, CREATED_AT, MODIFIED_AT, URL) VALUES (?,?,now(),now(),?)")) {
-            statement.setString(1, title);
-            statement.setString(2, content);
-            statement.setString(3, link);
+            statement.setString(1, news.getTitle());
+            statement.setString(2, news.getContent());
+            statement.setString(3, news.getUrl());
             statement.execute();
+            return 1;
         } catch (SQLException e) {
             e.printStackTrace();
+            return 0;
         }
     }
 }
