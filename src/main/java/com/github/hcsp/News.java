@@ -1,5 +1,7 @@
 package com.github.hcsp;
 
+import java.time.Instant;
+
 /**
  * @Author: GoFocus
  * @Date: 2020-04-15 15:08
@@ -11,11 +13,42 @@ public class News {
     private String title;
     private String content;
     private String url;
+    private Instant createdAt;
+    private Instant modifiedAt;
+
+
+    public News() {
+    }
 
     public News(String title, String content, String url) {
         this.title = title;
         this.content = content;
         this.url = url;
+    }
+
+    public News(News oldNews) {
+        this.id = oldNews.id;
+        this.title = oldNews.title;
+        this.content = oldNews.content;
+        this.url = oldNews.url;
+        this.createdAt = oldNews.createdAt;
+        this.modifiedAt = oldNews.modifiedAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Instant modifiedAt) {
+        this.modifiedAt = modifiedAt;
     }
 
     public String getUrl() {
