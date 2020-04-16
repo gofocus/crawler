@@ -38,7 +38,7 @@ public class MybatisCrawlerDao implements CrawlerDao {
     }
 
     @Override
-    public int setLinkProcessed(String linkProcessed) throws SQLException {
+    public int setLinkProcessed(String linkProcessed){
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
             return session.update("com.github.hcsp.MyMapper.setLinkProcessed", linkProcessed);
         }
@@ -48,17 +48,19 @@ public class MybatisCrawlerDao implements CrawlerDao {
     public int storeNewLinks(HashSet<String> newLinkPool) throws SQLException {
         for (String newLink : newLinkPool) {
             try (SqlSession session = sqlSessionFactory.openSession(true)) {
-                return session.insert("com.github.hcsp.MyMapper.storeNewLinks", newLink);
+                session.insert("com.github.hcsp.MyMapper.storeNewLinks", newLink);
             }
         }
-        return 0;
+        return 1;
     }
 
 
     @Override
-    public String getLinkUnprocessed() {
+    public synchronized String getLinkUnprocessed() {
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
-            return session.selectOne("com.github.hcsp.MyMapper.getLinkUnprocessed");
+            String linkUnprocessed = session.selectOne("com.github.hcsp.MyMapper.getLinkUnprocessed");
+            setLinkProcessed(linkUnprocessed);
+            return linkUnprocessed;
         }
     }
 

@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -33,7 +32,7 @@ public class Crawler extends Thread {
 
     @Override
     @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
-    public synchronized void run() {
+    public void run() {
         try {
             String link;
             while ((link = dao.getLinkUnprocessed()) != null) {
@@ -45,7 +44,6 @@ public class Crawler extends Thread {
 
                 dao.storeNewLinks(newLinkPool);
                 storeIntoDataBaseIfItIsNewsPage(document, link);
-                dao.setLinkProcessed(link);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

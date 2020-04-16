@@ -12,6 +12,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, SQLException {
         CrawlerDao dao = new MybatisCrawlerDao();
+//        new Crawler(dao).run();
 
         for (int i = 0; i < 10; i++) {
             new Crawler(dao).start();
