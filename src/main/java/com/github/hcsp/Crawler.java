@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -24,26 +23,30 @@ import java.util.stream.Collectors;
  * @Description:
  */
 
-public class Crawler {
+public class Crawler extends Thread {
     private final CrawlerDao dao;
 
     public Crawler(CrawlerDao dao) {
         this.dao = dao;
     }
 
+    @Override
     @SuppressFBWarnings("DMI_CONSTANT_DB_PASSWORD")
-    public void run() throws IOException, SQLException {
-        String link;
-        while ((link = dao.getLinkUnprocessed()) != null) {
-            ArrayList<String> allLinks = (ArrayList<String>) dao.getAllLinks();
-            Document document = getHtmlAndParse(link);
+    public void run() {
+        try {
+            String link;
+            while ((link = dao.getLinkUnprocessed()) != null) {
+                ArrayList<String> allLinks = (ArrayList<String>) dao.getAllLinks();
+                Document document = getHtmlAndParse(link);
 
-            HashSet<String> newLinkPool = new HashSet<>();
-            document.select("a").stream().map(tag -> tag.attr("href")).filter(Crawler::isInterestingLink).filter(newLink -> !allLinks.contains(newLink)).forEach(newLinkPool::add);
+                HashSet<String> newLinkPool = new HashSet<>();
+                document.select("a").stream().map(tag -> tag.attr("href")).filter(Crawler::isInterestingLink).filter(newLink -> !allLinks.contains(newLink)).forEach(newLinkPool::add);
 
-            dao.storeNewLinks(newLinkPool);
-            storeIntoDataBaseIfItIsNewsPage(document, link);
-            dao.setLinkProcessed(link);
+                dao.storeNewLinks(newLinkPool);
+                storeIntoDataBaseIfItIsNewsPage(document, link);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
     }

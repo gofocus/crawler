@@ -127,17 +127,10 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>6.3.3</version>
                 <configuration>
-                    <url>jdbc:mysql://localhost:3306/crawler</url>
+                    <url>jdbc:mysql://localhost:3306/crawler?serverTimezone=UTC</url>
                     <user>root</user>
                     <password>64793393</password>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.h2database</groupId>
-                        <artifactId>h2</artifactId>
-                        <version>1.4.197</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
