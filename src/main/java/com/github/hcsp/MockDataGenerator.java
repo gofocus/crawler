@@ -34,7 +34,7 @@ public class MockDataGenerator {
     public static void main(String[] args) {
         MockDataGenerator mockDataGenerator = new MockDataGenerator();
         try (SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH)) {
-            List<News> seedNews = session.selectList("com.github.hcsp.MockMapper.getAllNews");
+            List<News> seedNews = session.selectList("com.github.hcsp.MockMapper.getNews");
             int count = TARGET_NEWS_COUNT - seedNews.size();
             Random random = new Random();
             try {
