@@ -18,7 +18,7 @@ import java.util.Random;
  */
 public class MockDataGenerator {
     private static SqlSessionFactory sqlSessionFactory;
-    private static final int TARGET_NEWS_COUNT = 1_0000;
+    private static final int TARGET_NEWS_COUNT = 100_0000;
 
     public MockDataGenerator() {
         try {
@@ -40,7 +40,7 @@ public class MockDataGenerator {
             try {
                 while (count-- > 0) {
                     int index = random.nextInt(seedNews.size());
-                    News news = seedNews.get(index);
+                    News news = new News(seedNews.get(index));
                     Instant newInstant = news.getCreatedAt().minusSeconds(random.nextInt(3600 * 24 * 365));
                     news.setCreatedAt(newInstant);
                     news.setModifiedAt(newInstant);

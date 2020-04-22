@@ -16,10 +16,23 @@ public class News {
     private Instant createdAt;
     private Instant modifiedAt;
 
+
+    public News() {
+    }
+
     public News(String title, String content, String url) {
         this.title = title;
         this.content = content;
         this.url = url;
+    }
+
+    public News(News oldNews) {
+        this.id = oldNews.id;
+        this.title = oldNews.title;
+        this.content = oldNews.content;
+        this.url = oldNews.url;
+        this.createdAt = oldNews.createdAt;
+        this.modifiedAt = oldNews.modifiedAt;
     }
 
     public Instant getCreatedAt() {
