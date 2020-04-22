@@ -8,7 +8,7 @@ import java.util.List;
  */
 public interface MockMapper {
 
-    List<News> getAllNews();
+    List<News> getNews(int bound);
 
     int insertNews(News news);
 

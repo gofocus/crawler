@@ -6,7 +6,10 @@
         VALUES (#{title}, #{content}, #{createdAt}, #{modifiedAt}, #{url})
     </insert>
 
-    <select id="getAllNews" resultType="com.github.hcsp.News">
+    <select id="getNews" resultType="com.github.hcsp.News">
         select * from news
+        <if test="bound!=null">
+            limit #{bound}
+        </if>
     </select>
 </mapper>
