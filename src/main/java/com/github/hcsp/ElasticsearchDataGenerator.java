@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class ElasticsearchDataGenerator {
 
-    public void generateDate() throws IOException {
+    public void generateData() throws IOException {
         List<News> seedNews = new MockDataDao().getNews(2000);
         writeSingleThread(seedNews);
     }
@@ -47,7 +47,7 @@ public class ElasticsearchDataGenerator {
 
     public static void main(String[] args) {
         try {
-            new ElasticsearchDataGenerator().generateDate();
+            new ElasticsearchDataGenerator().generateData();
         } catch (IOException e) {
             e.printStackTrace();
         }
