@@ -17,25 +17,11 @@ import java.util.Random;
  * @Date: 22:49 2020/4/16
  */
 public class MockDataGenerator {
-    private static SqlSessionFactory sqlSessionFactory;
-    private static final int TARGET_NEWS_COUNT = 100_0000;
 
-    public MockDataGenerator() {
-        try {
-            String resource = "db/mybatis/mybatis-config.xml";
-            InputStream inputStream = Resources.getResourceAsStream(resource);
-            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    public static void main(String[] args) {
-        MockDataGenerator mockDataGenerator = new MockDataGenerator();
+    private static void mockData(SqlSessionFactory sqlSessionFactory, int targetNewsCount) {
         try (SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH)) {
             List<News> seedNews = session.selectList("com.github.hcsp.MockMapper.getNews");
-            int count = TARGET_NEWS_COUNT - seedNews.size();
+            int count = targetNewsCount - seedNews.size();
             Random random = new Random();
             try {
                 while (count-- > 0) {
@@ -57,6 +43,20 @@ public class MockDataGenerator {
                 throw new RuntimeException(e);
             }
         }
+
+    }
+
+    public static void main(String[] args) {
+        SqlSessionFactory sqlSessionFactory;
+        try {
+            String resource = "db/mybatis/mybatis-config.xml";
+            InputStream inputStream = Resources.getResourceAsStream(resource);
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        mockData(sqlSessionFactory, 100_0000);
     }
 
 
