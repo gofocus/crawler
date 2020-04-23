@@ -12,8 +12,11 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+<<<<<<< HEAD
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+=======
+>>>>>>> b1d71937a3b08e09aca23ce586a198e47d2f920d
 
 /**
  * @Author: GoFocus
